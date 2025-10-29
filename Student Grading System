@@ -1,124 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Grading System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
+      background: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 20px 0;
-      text-align: center;
-    }
-    .container {
-      max-width: 600px;
+    form {
       background: white;
-      margin: 40px auto;
-      padding: 30px;
+      padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    label {
-      display: block;
-      margin-top: 15px;
+    input, button {
+      margin: 8px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #result {
+      margin-top: 20px;
       font-weight: bold;
-    }
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 15px;
-      background: #3498db;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    button:hover {
-      background: #2980b9;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 15px;
-      background: #ecf0f1;
-      border-left: 5px solid #3498db;
     }
   </style>
 </head>
 <body>
-
-<header>
   <h1>Student Grading System</h1>
-</header>
-
-<div class="container">
   <form id="gradeForm">
-    <label for="name">Student Name:</label>
-    <input type="text" id="name" required>
-
-    <label for="roll">Roll Number:</label>
-    <input type="text" id="roll" required>
-
-    <label for="subject1">Maths Marks:</label>
-    <input type="number" id="subject1" min="0" max="100" required>
-
-    <label for="subject2">Science Marks:</label>
-    <input type="number" id="subject2" min="0" max="100" required>
-
-    <label for="subject3">English Marks:</label>
-    <input type="number" id="subject3" min="0" max="100" required>
-
+    <input type="text" id="name" placeholder="Student Name" required><br>
+    <input type="number" id="sub1" placeholder="Subject 1 Marks" required>
+    <input type="number" id="sub2" placeholder="Subject 2 Marks" required>
+    <input type="number" id="sub3" placeholder="Subject 3 Marks" required><br>
     <button type="submit">Calculate Grade</button>
   </form>
 
-  <div class="result" id="result" style="display: none;"></div>
-</div>
+  <div id="result"></div>
 
-<script>
-  document.getElementById('gradeForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+  <script>
+    document.getElementById("gradeForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const marks = [
+        Number(document.getElementById("sub1").value),
+        Number(document.getElementById("sub2").value),
+        Number(document.getElementById("sub3").value)
+      ];
 
-    const name = document.getElementById('name').value;
-    const roll = document.getElementById('roll').value;
-    const s1 = parseFloat(document.getElementById('subject1').value);
-    const s2 = parseFloat(document.getElementById('subject2').value);
-    const s3 = parseFloat(document.getElementById('subject3').value);
+      const res = await fetch("/calculate-grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, marks })
+      });
 
-    const total = s1 + s2 + s3;
-    const avg = total / 3;
-    let grade = '';
-
-    if (avg >= 90) grade = 'A+';
-    else if (avg >= 80) grade = 'A';
-    else if (avg >= 70) grade = 'B';
-    else if (avg >= 60) grade = 'C';
-    else if (avg >= 50) grade = 'D';
-    else grade = 'F';
-
-    const resultDiv = document.getElementById('result');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-      <h3>Result</h3>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Roll Number:</strong> ${roll}</p>
-      <p><strong>Total Marks:</strong> ${total}/300</p>
-      <p><strong>Average:</strong> ${avg.toFixed(2)}</p>
-      <p><strong>Grade:</strong> ${grade}</p>
-    `;
-  });
-</script>
-
+      const data = await res.json();
+      document.getElementById("result").innerHTML =
+        `${data.name}'s Total: ${data.total}, Average: ${data.average.toFixed(2)}, Grade: <b>${data.grade}</b>`;
+    });
+  </script>
 </body>
 </html>
